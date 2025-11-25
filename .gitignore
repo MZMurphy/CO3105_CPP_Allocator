@@ -1,0 +1,19 @@
+# Project Stuff
+*.o
+GenAlloc
+CheckAlloc
+*.out
+*.exe
+
+# My junk! :)
+.DS_Store
+__MACOSX/
+.vscode/
+.idea/
+*.code-workspace
+
+
+# Ignore example makefiles from sir
+example_makefile1
+example_makefile2
+

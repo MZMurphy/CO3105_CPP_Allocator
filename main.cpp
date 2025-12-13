@@ -14,12 +14,12 @@ int main(int argc, char* argv[])
 {
     if (argc != 5)
     {
-        std::cerr << "Usage: " << argv[0] << " <staff_file> <student_file> <project_file> <output_file>\n";
+        std::cerr << "Usage: " << argv[0] << " <staff_file> <project_file> <student_file> <output_file>\n";
         return 1; // Failure.
     }
     std::string staffFile = argv[1];
-    std::string studentFile = argv[2];
-    std::string projectFile = argv[3];
+    std::string projectFile = argv[2];
+    std::string studentFile = argv[3];
     std::string outputFile = argv[4];
     
 

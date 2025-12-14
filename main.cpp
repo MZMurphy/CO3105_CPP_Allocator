@@ -35,6 +35,7 @@ int main(int argc, char* argv[])
     Allocator allocator;
     allocator.load_staff("./Test/staffExample.txt"); //hardcoded for now.
     allocator.load_students("./Test/studentExample.txt");
+    allocator.load_projects("./Test/projectExample.txt");
 
     return 0; // Success.
 }

@@ -28,8 +28,8 @@ void Allocator::load_staff(const std::string& filename)
         {
             subject_areas.push_back(subject_area);
         }
-        DEBUG_PRINT("Staff ID: " << staff_id << "\n");
-        DEBUG_PRINT("Workload: " << load << "\n");
+        DEBUG_PRINT("Staff ID: " << staff_id << ", ");
+        DEBUG_PRINT("Workload: " << load << ", ");
 
         DEBUG_PRINT("Subject Areas: ");
         for(std::string subject : subject_areas)
@@ -42,6 +42,7 @@ void Allocator::load_staff(const std::string& filename)
     }
     file.close();
 }
+
 // Example student file looks like
 // student_id, project_id, 0-4 project ids...
 // Open 
@@ -50,7 +51,7 @@ void Allocator::load_students(const std::string& filename)
     std::ifstream file(filename); // open file.
     std::string file_line; // holds each line
 
-    DEBUG_PRINT("Loading studentfile: " <<filename <<"\n\n");
+    DEBUG_PRINT("\nLoading studentfile: " <<filename <<"\n\n");
 
     while(std::getline(file, file_line))
     {
@@ -75,4 +76,36 @@ void Allocator::load_students(const std::string& filename)
     }
     file.close();
 
+}
+
+// Example project file looks like:
+// project_id, proposer/staff_id, max_students/multpliciyt, subject aras, and titles WITH spaces.
+
+void Allocator::load_projects(const std::string& filename)
+{
+    std::ifstream file(filename); // open file.
+    std::string file_line; // holds each line
+    DEBUG_PRINT("Loading projectfile: " << filename << "\n\n");
+
+    while(std::getline(file, file_line))
+    {
+        std::istringstream iss(file_line);
+        std::string project_id, staff_owner_id, subject_area;
+        int assignment_capacity;
+        iss >> project_id >> staff_owner_id >> assignment_capacity >> subject_area; 
+
+        // Get non-fixed Title with spaces.
+        std::string title;
+        std::getline(iss, title);
+        if (!title.empty() && title[0] == ' ') {
+            title = title.substr(1); // this removes leading space
+          }
+
+        DEBUG_PRINT("Project ID: "<< project_id << ", ");
+        DEBUG_PRINT("Supervisor: " << staff_owner_id << ", "); // staff owner. 
+        DEBUG_PRINT("Capacity: " << assignment_capacity << ", ");
+        DEBUG_PRINT("Subject Area: " << subject_area << ", ");
+        DEBUG_PRINT("Title: " << title << "\n");
+    }
+    file.close();
 }

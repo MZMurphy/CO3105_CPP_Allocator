@@ -32,5 +32,8 @@ int main(int argc, char* argv[])
     // We'd create the object, pass data/other objects, run it, then either handle the output here or within it.
     // We choose.
 
+    Allocator allocator;
+    allocator.load_staff("staffExample.txt"); //hardcoded for now.
+
     return 0; // Success.
 }

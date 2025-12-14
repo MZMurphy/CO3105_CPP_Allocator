@@ -33,7 +33,8 @@ int main(int argc, char* argv[])
     // We choose.
 
     Allocator allocator;
-    allocator.load_staff("staffExample.txt"); //hardcoded for now.
+    allocator.load_staff("./Test/staffExample.txt"); //hardcoded for now.
+    allocator.load_students("./Test/studentExample.txt");
 
     return 0; // Success.
 }

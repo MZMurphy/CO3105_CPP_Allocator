@@ -9,8 +9,8 @@ OBJ = $(SRC:.cpp=.o) # Turn all src files into object files
 
 
 # Compile with everything we set above.
-GenAlloc: $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OBJS) -o GenAlloc
+GenAlloc: $(OBJ)
+	$(CXX) $(CXXFLAGS) $(OBJ) -o GenAlloc
 
 # This is new to me! It's a generic rule to make any .o from a .cpp which I usally do manually (SLOW)!
 %.o: %.cpp

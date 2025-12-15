@@ -197,4 +197,35 @@ void Allocator::perform_allocation() {
             }
         }
     }
+
+    // 2.2 - assign based on subject area match
+    for (auto& entry : staff_dict) {
+        std::string staff_id = entry.first;
+        Staff& staff = entry.second;
+
+        if(!staff.able_to_supervise()) continue;
+
+        for (auto& alloc_entry : allocations) {
+            Allocation& alloc = alloc_entry.second;
+
+            if (alloc.staff_id.empty()) {
+                Project& p = project_dict.at(alloc.project_id);
+
+                bool subject_match = false;
+                for (const auto& area : staff.subject_areas) {
+                    if (area == p.subject_area) {
+                        subject_match = true;
+                        break;
+                    }
+                }
+
+                if (subject_match) {
+                    alloc.staff_id = staff_id;
+                    staff.current_workload++;
+
+                    if(!staff.able_to_supervise()) break;
+                }
+            }
+        }
+    }
 }

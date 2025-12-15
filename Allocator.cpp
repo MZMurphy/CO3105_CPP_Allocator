@@ -142,8 +142,48 @@ void Allocator::save_allocation(const std::string& allocation_file) {
 }
 
 int Allocator::calculate_score() {
-    // placeholder
-    return 0;
+    int score = 0;
+
+    for (const auto& entry : allocations) {
+        const Allocation& alloc = entry.second;
+
+        // student preference score
+        Student& student = student_dict.at(alloc.student_id);
+        int choice_score = 0;
+
+        for (size_t i = 0; i < student.project_preferences.size(); ++i) {
+            if (s.project_preferences[i] == alloc.project_id) {
+                if (i == 0) choice_score = 4;
+                else if (i == 1) choice_score = 3;
+                else if (i == 2) choice_score = 2;
+                else if (i == 3) choice_score = 1;
+                break;
+            }
+        }
+        score += choice_score;
+
+        if (!alloc.staff_id.empty()) {
+            Staff& staff = staff_dict.at(alloc.staff_id);
+            Project& project = project_dict.at(alloc.project_id);
+
+            // highest priority - project proposer
+            if (project.proposer_id == staff.staff_id) {
+                score += 4;
+            } else {
+                // second priority - subject area match
+                bool subject_match = false;
+                for (const auto& area : staff.subject_areas) {
+                    if (area == project.subject_area) {
+                        subject_match = true;
+                        break;
+                    }
+                }
+                if (subject_match) score += 2;
+            }
+        }
+    }
+    DEBUG_PRINT("Final Score: " << score << "\n");
+    return score;
 }
 
 void Allocator::perform_allocation() {
@@ -155,10 +195,10 @@ void Allocator::perform_allocation() {
         bool allocated = false;
         for (const auto& project_id : student.project_preferences) {
             if (project_dict.count(project_id)) {
-                Project& p = project_dict[project_id];
+                Project& project = project_dict[project_id];
 
-                if (p.is_available()) {
-                    p.current_allocation++;
+                if (project.is_available()) {
+                    project.current_allocation++;
 
                     Allocation alloc;
                     alloc.student_id = student_id;
@@ -186,9 +226,9 @@ void Allocator::perform_allocation() {
             Allocation& alloc = alloc_entry.second;
 
             if (alloc.staff_id.empty()) {
-                Project& p = project_dict.at(alloc.project_id);
+                Project& project = project_dict.at(alloc.project_id);
 
-                if (p.proposer_id == staff_id) {
+                if (project.proposer_id == staff_id) {
                     alloc.staff_id = staff_id;
                     staff.current_workload++;
 
@@ -209,11 +249,11 @@ void Allocator::perform_allocation() {
             Allocation& alloc = alloc_entry.second;
 
             if (alloc.staff_id.empty()) {
-                Project& p = project_dict.at(alloc.project_id);
+                Project& project = project_dict.at(alloc.project_id);
 
                 bool subject_match = false;
                 for (const auto& area : staff.subject_areas) {
-                    if (area == p.subject_area) {
+                    if (area == project.subject_area) {
                         subject_match = true;
                         break;
                     }

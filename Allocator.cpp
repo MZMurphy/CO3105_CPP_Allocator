@@ -8,9 +8,9 @@ Allocator::Allocator() {};
 // Example staff files look like:
 // staff_Id, workload, subject area, more subject arreas...
 // Open stafffile, read line by line. 
-void Allocator::load_staff(const std::string& filename)
+void Allocator::load_staff(const std::string& staff_file)
 {
-    std::ifstream file(filename); // open file.
+    std::ifstream file(staff_file); // open file.
     std::string file_line; // holds each line
 
     DEBUG_PRINT("stafffile: " <<filename <<"\n\n");
@@ -50,9 +50,9 @@ void Allocator::load_staff(const std::string& filename)
 // Example student file looks like
 // student_id, project_id, 0-4 project ids...
 // Open 
-void Allocator::load_students(const std::string& filename)
+void Allocator::load_students(const std::string& student_file)
 {
-    std::ifstream file(filename); // open file.
+    std::ifstream file(student_file); // open file.
     std::string file_line; // holds each line
 
     DEBUG_PRINT("\n studentfile: " <<filename <<"\n\n");
@@ -91,7 +91,7 @@ void Allocator::load_students(const std::string& filename)
 // Example project file looks like:
 // project_id, proposer/staff_id, max_students/multpliciyt, subject aras, and titles WITH spaces.
 
-void Allocator::load_projects(const std::string& filename)
+void Allocator::load_projects(const std::string& project_file)
 {
     std::ifstream file(filename); // open file.
     std::string file_line; // holds each line
@@ -129,13 +129,23 @@ void Allocator::load_projects(const std::string& filename)
 
 
 
-// I don't know what methods you need but i'm guessing this is maybe one of them.
-void perform_allocation()
-{
-    // your implementation here maybe? you can do what you want! 
-    // See main() for more direction
+void Allocator::save_allocation(const std::string& allocation_file) {
+    std::ofstream file(allocation_file); // open file for writing
 
-    //staff_dict;
-    //project_dict;
-    //student_dict
+    for (auto const& entry : allocations) {
+        Allocation alloc = entry.second;
+        file << alloc.student_id << " " << alloc.project_id M<< " " << alloc.staff_id << "\n";
+    }
+
+    file << calculate_score() << "\n";
+    file.close();
+}
+
+int Allocator::calculate_score() {
+    // placeholder
+    return 0;
+}
+
+void Allocator::perform_allocation() {
+    // placeholder
 }

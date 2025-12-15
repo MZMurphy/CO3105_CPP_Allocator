@@ -9,7 +9,6 @@
 
 
 // Reads arguments and acts as the entry point for the program.
-
 int main(int argc, char* argv[])
 {
     if (argc != 5)
@@ -22,20 +21,15 @@ int main(int argc, char* argv[])
     std::string studentFile = argv[3];
     std::string outputFile = argv[4];
     
-
-    // From here we plug in our logic from other sources/headers.
-    // ANd write to an output file
-
-    // Allocator logic! 
-    // This is just a placeholder for the real deal.
-
-    // We'd create the object, pass data/other objects, run it, then either handle the output here or within it.
-    // We choose.
+    // Flow is that main never never directly accesses our Staff, Student, Project
+    // Data strcutures. Allocator is our inbetween of main and the data. 
 
     Allocator allocator;
-    allocator.load_staff("./Test/staffExample.txt"); //hardcoded for now.
-    allocator.load_students("./Test/studentExample.txt");
-    allocator.load_projects("./Test/projectExample.txt");
+    allocator.load_staff(staffFile);
+    allocator.load_projects(projectFile);
+    allocator.load_students(studentFile);
+
+    // allocator.run_allocation(); maybe???? 
 
     return 0; // Success.
 }

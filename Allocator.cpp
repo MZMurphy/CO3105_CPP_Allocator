@@ -126,3 +126,16 @@ void Allocator::load_projects(const std::string& filename)
     DEBUG_PRINT("Project dict data: " << project_dict.size() << " in dict.\n\n");
     file.close();
 }
+
+
+
+// I don't know what methods you need but i'm guessing this is maybe one of them.
+void perform_allocation()
+{
+    // your implementation here maybe? you can do what you want! 
+    // See main() for more direction
+
+    //staff_dict;
+    //project_dict;
+    //student_dict
+}

@@ -228,4 +228,23 @@ void Allocator::perform_allocation() {
             }
         }
     }
+
+    // 2.3 - assign to any available staff
+    for (auto& entry : staff_dict) {
+        std::string staff_id = entry.first;
+        Staff& staff = entry.second;
+
+        if(!staff.able_to_supervise()) continue;
+
+        for (auto& alloc_entry : allocations) {
+            Allocation& alloc = alloc_entry.second;
+
+            if (alloc.staff_id.empty()) {
+                alloc.staff_id = staff_id;
+                staff.current_workload++;
+
+                if(!staff.able_to_supervise()) break;
+            }
+        }
+    }
 }

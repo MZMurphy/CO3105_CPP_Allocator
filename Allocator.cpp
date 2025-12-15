@@ -134,7 +134,7 @@ void Allocator::save_allocation(const std::string& allocation_file) {
 
     for (auto const& entry : allocations) {
         Allocation alloc = entry.second;
-        file << alloc.student_id << " " << alloc.project_id M<< " " << alloc.staff_id << "\n";
+        file << alloc.student_id << " " << alloc.project_id << " " << alloc.staff_id << "\n";
     }
 
     file << calculate_score() << "\n";
@@ -154,8 +154,8 @@ void Allocator::perform_allocation() {
 
         bool allocated = false;
         for (const auto& project_id : student.project_preferences) {
-            if (project_dict.count(proj_id)) {
-                Project& p = project_dict[proj_id];
+            if (project_dict.count(project_id)) {
+                Project& p = project_dict[project_id];
 
                 if (p.is_available()) {
                     p.current_allocation++;
@@ -167,7 +167,7 @@ void Allocator::perform_allocation() {
 
                     allocations[student_id] = alloc;
 
-                    assigned = true;
+                    allocated = true;
                     break;
                 }
             }
@@ -180,7 +180,7 @@ void Allocator::perform_allocation() {
         std::string staff_id = entry.first;
         Staff& staff = entry.second;
 
-        if(!staff.free_to_supervise()) continue;
+        if(!staff.able_to_supervise()) continue;
 
          for (auto& alloc_entry : allocations) {
             Allocation& alloc = alloc_entry.second;
@@ -190,7 +190,7 @@ void Allocator::perform_allocation() {
 
                 if (p.proposer_id == staff_id) {
                     alloc.staff_id = staff_id;
-                    staff.current_supervisions++;
+                    staff.current_workload++;
 
                     if(!staff.able_to_supervise()) break;
                 }

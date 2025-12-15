@@ -13,7 +13,7 @@ void Allocator::load_staff(const std::string& staff_file)
     std::ifstream file(staff_file); // open file.
     std::string file_line; // holds each line
 
-    DEBUG_PRINT("stafffile: " <<filename <<"\n\n");
+    DEBUG_PRINT("stafffile: " <<staff_file <<"\n\n");
 
     while(std::getline(file, file_line)) // read line by line
     {
@@ -55,7 +55,7 @@ void Allocator::load_students(const std::string& student_file)
     std::ifstream file(student_file); // open file.
     std::string file_line; // holds each line
 
-    DEBUG_PRINT("\n studentfile: " <<filename <<"\n\n");
+    DEBUG_PRINT("\n studentfile: " <<student_file <<"\n\n");
 
     while(std::getline(file, file_line))
     {
@@ -93,9 +93,9 @@ void Allocator::load_students(const std::string& student_file)
 
 void Allocator::load_projects(const std::string& project_file)
 {
-    std::ifstream file(filename); // open file.
+    std::ifstream file(project_file); // open file.
     std::string file_line; // holds each line
-    DEBUG_PRINT("projectfile: " << filename << "\n\n");
+    DEBUG_PRINT("projectfile: " << project_file << "\n\n");
 
     while(std::getline(file, file_line))
     {

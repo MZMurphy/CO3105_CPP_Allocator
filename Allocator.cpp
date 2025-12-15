@@ -147,5 +147,54 @@ int Allocator::calculate_score() {
 }
 
 void Allocator::perform_allocation() {
-    // placeholder
+    // Phase 1 - allocate based on student preferences
+    for (auto& entry : student_dict) {
+        std::string student_id = entry.first;
+        Student& student = entry.second;
+
+        bool allocated = false;
+        for (const auto& project_id : student.project_preferences) {
+            if (project_dict.count(proj_id)) {
+                Project& p = project_dict[proj_id];
+
+                if (p.is_available()) {
+                    p.current_allocation++;
+
+                    Allocation alloc;
+                    alloc.student_id = student_id;
+                    alloc.project_id = project_id;
+                    alloc.staff_id = "";
+
+                    allocations[student_id] = alloc;
+
+                    assigned = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    // Phase 2 - assign supervisors
+    // 2.1 - assign based on project proposer
+    for (auto& entry : staff_dict) {
+        std::string staff_id = entry.first;
+        Staff& staff = entry.second;
+
+        if(!staff.free_to_supervise()) continue;
+
+         for (auto& alloc_entry : allocations) {
+            Allocation& alloc = alloc_entry.second;
+
+            if (alloc.staff_id.empty()) {
+                Project& p = project_dict.at(alloc.project_id);
+
+                if (p.proposer_id == staff_id) {
+                    alloc.staff_id = staff_id;
+                    staff.current_supervisions++;
+
+                    if(!staff.able_to_supervise()) break;
+                }
+            }
+        }
+    }
 }

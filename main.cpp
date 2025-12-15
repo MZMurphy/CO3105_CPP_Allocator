@@ -29,7 +29,8 @@ int main(int argc, char* argv[])
     allocator.load_projects(projectFile);
     allocator.load_students(studentFile);
 
-    // allocator.run_allocation(); maybe???? 
+    allocater.run_allocation();
+    allocator.save_allocation(outputFile);
 
     return 0; // Success.
 }

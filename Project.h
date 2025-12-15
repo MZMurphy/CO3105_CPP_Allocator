@@ -6,6 +6,7 @@
 class Project{
     public:
         // Constructors.
+        Project() = default;
         Project(const std::string& id, const std::string &proposer, int capacity, const std::string &area, const std::string& project_title);
         // Attributes.
         std::string project_id;

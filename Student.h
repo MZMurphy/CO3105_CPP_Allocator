@@ -7,6 +7,7 @@
 class Student{
     public:
         //Constructors.
+        Student() = default;
         Student(const std::string& id, const std::vector<std::string>& preferences);
         // Attribtues.
         std::string student_id;

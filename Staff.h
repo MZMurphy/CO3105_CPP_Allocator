@@ -8,6 +8,7 @@
 class Staff{
     public:
         // Constructors.
+        Staff() = default;
         Staff(const std::string& id, int max_workload, const std::vector<std::string>& areas);
         // Attributes.
         std::string staff_id;

@@ -41,6 +41,8 @@ class Allocator{
         std::unordered_map<std::string, Staff>staff_dict;
         std::unordered_map<std::string, Project>project_dict;
         std::unordered_map<std::string, Student>student_dict;
+
+        // Sorted by student_id for easy output
         std::map<std::string, Allocation>allocations;
 };
 

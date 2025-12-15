@@ -152,7 +152,7 @@ int Allocator::calculate_score() {
         int choice_score = 0;
 
         for (size_t i = 0; i < student.project_preferences.size(); ++i) {
-            if (s.project_preferences[i] == alloc.project_id) {
+            if (student.project_preferences[i] == alloc.project_id) {
                 if (i == 0) choice_score = 4;
                 else if (i == 1) choice_score = 3;
                 else if (i == 2) choice_score = 2;

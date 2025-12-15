@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include "Staff.h"
 #include "Project.h"
 #include "Student.h"
@@ -30,6 +31,10 @@ class Allocator{
         void load_staff(const std::string& staff_file);
         void load_projects(const std::string& project_file);
         void load_students(const std::string& student_file);
+    private:
+        std::unordered_map<std::string, Staff>staff_dict;
+        std::unordered_map<std::string, Project>project_dict;
+        std::unordered_map<std::string, Student>student_dict;
 };
 
 #endif //ALLOCATOR_H

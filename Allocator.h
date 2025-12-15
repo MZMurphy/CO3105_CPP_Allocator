@@ -36,11 +36,11 @@ class Allocator{
         void perform_allocation();
         void save_allocation(const std::string& allocation_file);
     private:
-        int calculate_score();
+        int calculate_score() const;
 
-        std::unordered_map<std::string, Staff>staff_dict;
-        std::unordered_map<std::string, Project>project_dict;
-        std::unordered_map<std::string, Student>student_dict;
+        std::unordered_map<std::string, Staff>staff_dict_;
+        std::unordered_map<std::string, Project>project_dict_;
+        std::unordered_map<std::string, Student>student_dict_;
 
         // Sorted by student_id for easy output
         std::map<std::string, Allocation>allocations;

@@ -40,10 +40,10 @@ void Allocator::load_staff(const std::string& staff_file)
 
         // Staff dictionaries
         Staff staff(staff_id, workload, subject_areas);
-        staff_dict.insert({staff_id, staff});
+        staff_dict_.insert({staff_id, staff});
     }
         
-    DEBUG_PRINT("Staff dict data: " << staff_dict.size() << " in staff dict.\n\n");
+    DEBUG_PRINT("Staff dict data: " << staff_dict_.size() << " in staff dict.\n\n");
     file.close();
 }
 
@@ -72,7 +72,7 @@ void Allocator::load_students(const std::string& student_file)
         }
         // Student dictionary.
         Student student(student_id, project_preferences);
-        student_dict.insert({student_id, student});
+        student_dict_.insert({student_id, student});
 
         // DEBUG.
         DEBUG_PRINT("Student ID: " << student_id << "\n");
@@ -83,7 +83,7 @@ void Allocator::load_students(const std::string& student_file)
         }
         DEBUG_PRINT("\n\n");
     }
-    DEBUG_PRINT("Student dict data: " << student_dict.size() << " in student dict.\n\n");
+    DEBUG_PRINT("Student dict data: " << student_dict_.size() << " in student dict.\n\n");
     file.close();
 
 }
@@ -114,7 +114,7 @@ void Allocator::load_projects(const std::string& project_file)
         // Project dictionary
         Project project(project_id, staff_owner_id,
         assignment_capacity, subject_area, title);
-        project_dict.insert({project_id, project});
+        project_dict_.insert({project_id, project});
 
         DEBUG_PRINT("Project ID: "<< project_id << ", ");
         DEBUG_PRINT("Supervisor: " << staff_owner_id << ", "); // staff owner. 
@@ -123,7 +123,7 @@ void Allocator::load_projects(const std::string& project_file)
         DEBUG_PRINT("Title: " << title << "\n");
     
     }
-    DEBUG_PRINT("Project dict data: " << project_dict.size() << " in dict.\n\n");
+    DEBUG_PRINT("Project dict data: " << project_dict_.size() << " in dict.\n\n");
     file.close();
 }
 
@@ -141,14 +141,14 @@ void Allocator::save_allocation(const std::string& allocation_file) {
     file.close();
 }
 
-int Allocator::calculate_score() {
+int Allocator::calculate_score() const{
     int score = 0;
 
     for (const auto& entry : allocations) {
         const Allocation& alloc = entry.second;
 
         // student preference score
-        Student& student = student_dict.at(alloc.student_id);
+        Student& student = student_dict_.at(alloc.student_id);
         int choice_score = 0;
 
         for (size_t i = 0; i < student.project_preferences.size(); ++i) {
@@ -163,8 +163,8 @@ int Allocator::calculate_score() {
         score += choice_score;
 
         if (!alloc.staff_id.empty()) {
-            Staff& staff = staff_dict.at(alloc.staff_id);
-            Project& project = project_dict.at(alloc.project_id);
+            Staff& staff = staff_dict_.at(alloc.staff_id);
+            Project& project = project_dict_.at(alloc.project_id);
 
             // highest priority - project proposer
             if (project.proposer_id == staff.staff_id) {
@@ -188,14 +188,14 @@ int Allocator::calculate_score() {
 
 void Allocator::perform_allocation() {
     // Phase 1 - allocate based on student preferences
-    for (auto& entry : student_dict) {
+    for (auto& entry : student_dict_) {
         std::string student_id = entry.first;
         Student& student = entry.second;
 
         bool allocated = false;
         for (const auto& project_id : student.project_preferences) {
-            if (project_dict.count(project_id)) {
-                Project& project = project_dict[project_id];
+            if (project_dict_.count(project_id)) {
+                Project& project = project_dict_[project_id];
 
                 if (project.is_available()) {
                     project.current_allocation++;
@@ -216,7 +216,7 @@ void Allocator::perform_allocation() {
 
     // Phase 2 - assign supervisors
     // 2.1 - assign based on project proposer
-    for (auto& entry : staff_dict) {
+    for (auto& entry : staff_dict_) {
         std::string staff_id = entry.first;
         Staff& staff = entry.second;
 
@@ -226,7 +226,7 @@ void Allocator::perform_allocation() {
             Allocation& alloc = alloc_entry.second;
 
             if (alloc.staff_id.empty()) {
-                Project& project = project_dict.at(alloc.project_id);
+                Project& project = project_dict_.at(alloc.project_id);
 
                 if (project.proposer_id == staff_id) {
                     alloc.staff_id = staff_id;
@@ -239,7 +239,7 @@ void Allocator::perform_allocation() {
     }
 
     // 2.2 - assign based on subject area match
-    for (auto& entry : staff_dict) {
+    for (auto& entry : staff_dict_) {
         std::string staff_id = entry.first;
         Staff& staff = entry.second;
 
@@ -249,7 +249,7 @@ void Allocator::perform_allocation() {
             Allocation& alloc = alloc_entry.second;
 
             if (alloc.staff_id.empty()) {
-                Project& project = project_dict.at(alloc.project_id);
+                Project& project = project_dict_.at(alloc.project_id);
 
                 bool subject_match = false;
                 for (const auto& area : staff.subject_areas) {
@@ -270,7 +270,7 @@ void Allocator::perform_allocation() {
     }
 
     // 2.3 - assign to any available staff
-    for (auto& entry : staff_dict) {
+    for (auto& entry : staff_dict_) {
         std::string staff_id = entry.first;
         Staff& staff = entry.second;
 

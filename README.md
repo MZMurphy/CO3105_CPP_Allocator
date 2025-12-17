@@ -56,7 +56,7 @@ could explore lots of different options, and use that to find the maximum score.
   2. Leftover students are then
   assigned to any available project, starting with those proposed by supervisors (4 points), then whatever's available.
      - By assigning them in this order, we ensure the highest score possible, which is always our aim.
-  3. The third part is supervisor assignments. Again we look at proposer, then subject area match, then anyone who needs a supervisor.
+  3. The third part is supervisor assignments. Again we look at proposer (4pts), then subject area match (2pts), then anyone who needs a supervisor (0pts).
 
 - Other than that I changed private member variable names to match style guides, added checks for if a file is missing,
-- and fixed an issue with file parsing bc comments in txt files were being read as part of an ID
+- and fixed an issue with file parsing bc comments in txt files were being read as part of an ID.

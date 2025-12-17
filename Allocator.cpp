@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <random>
 #include <chrono>
+const int NUM_ITERATIONS = 1000;                                                                                             
 
 Allocator::Allocator() {};
 
@@ -68,7 +69,7 @@ void Allocator::load_students(const std::string& student_file)
     }
     std::string file_line;
 
-    DEBUG_PRINT("\n studentfile: " <<student_file <<"\n\n");
+    DEBUG_PRINT("\nstudentfile: " <<student_file <<"\n\n");
 
     while(std::getline(file, file_line))
     {
@@ -253,7 +254,7 @@ void Allocator::perform_allocation() {
         staff_ids.push_back(entry.first);
     }
 
-    for (int i = 0; i < 1000; ++i) {
+    for (int i = 0; i < NUM_ITERATIONS; ++i) {
         reset_allocations();
 
         // shuffle student and staff order

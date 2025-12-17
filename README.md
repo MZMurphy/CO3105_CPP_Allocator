@@ -44,14 +44,19 @@ So far I've done:
 - `./Test/` add any test files you want and change `./genalloc` call to fit
 
 ### What's Changed (Draco)
-- I implemented the greedy algorithm given as an example, and then improved it using one of the examples,
-described as when you 'Repeat the above algorithm a number 
-of times, each with a different random ordering of students / staff, and choose the best one.'
-- The algo runs 1000 iterations, shuffling the order of students and staff each time
-using `std::shuffle` (as seen in the cpp algorithm ref given in lectures)
-- The algo runs a greedy assignment and the allocation is scored. If new score is higher,
-it's saved as the new max. 
-- Three phases in the algo: Student preference based assignment, then checks all students are assigned,
-then assigns supervisor. Follows all specifications (I think)
-- I also added some stuff to the file loading in case files are missing, also fixed an issue where # was read as an ID,
-and changed private member variable names to match style requirements
+- I implemented the greedy algorithm given as an example, which is pretty basic.
+- This basic algo would get stuck giving the first couple of students in the list their optimal allocations,
+and the others would be left with bad allocs.
+- This was fixed through one of the suggested optimisations. Running 1000 iterations of the allocation,
+I used `std::shuffle` to randomise what order students and staff were processed. This meant the algo
+could explore lots of different options, and use that to find the maximum score. 
+- `perform_allocation` is split into three parts to meet all the requirements:
+  1. Firstly it does the normal
+  greedy pass where it matches students with their choices (in order of preference). 
+  2. Leftover students are then
+  assigned to any available project, starting with those proposed by supervisors (4 points), then whatever's available.
+     - By assigning them in this order, we ensure the highest score possible, which is always our aim.
+  3. The third part is supervisor assignments. Again we look at proposer, then subject area match, then anyone who needs a supervisor.
+
+- Other than that I changed private member variable names to match style guides, added checks for if a file is missing,
+- and fixed an issue with file parsing bc comments in txt files were being read as part of an ID

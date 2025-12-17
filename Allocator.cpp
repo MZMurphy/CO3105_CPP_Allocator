@@ -2,7 +2,10 @@
 // See stream slides
 #include <fstream>
 #include <sstream>
-
+#include <vector>
+#include <algorithm>
+#include <random>
+#include <chrono>
 Allocator::Allocator() {};
 
 // Example staff files look like:
@@ -132,7 +135,7 @@ void Allocator::load_projects(const std::string& project_file)
 void Allocator::save_allocation(const std::string& allocation_file) {
     std::ofstream file(allocation_file); // open file for writing
 
-    for (auto const& entry : allocations) {
+    for (auto const& entry : allocations_) {
         Allocation alloc = entry.second;
         file << alloc.student_id << " " << alloc.project_id << " " << alloc.staff_id << "\n";
     }
@@ -144,11 +147,17 @@ void Allocator::save_allocation(const std::string& allocation_file) {
 int Allocator::calculate_score() const{
     int score = 0;
 
-    for (const auto& entry : allocations) {
+    for (const auto& entry : allocations_) {
         const Allocation& alloc = entry.second;
 
+        // without this, students will be left with no supervisor but
+        // they still get their project choice, so get a higher score anyway.
+        // this doesn't fulfill allocation reqs.
+        if (alloc.staff_id.empty()) {
+            continue;
+        }
         // student preference score
-        Student& student = student_dict_.at(alloc.student_id);
+        const Student& student = student_dict_.at(alloc.student_id);
         int choice_score = 0;
 
         for (size_t i = 0; i < student.project_preferences.size(); ++i) {
@@ -163,8 +172,8 @@ int Allocator::calculate_score() const{
         score += choice_score;
 
         if (!alloc.staff_id.empty()) {
-            Staff& staff = staff_dict_.at(alloc.staff_id);
-            Project& project = project_dict_.at(alloc.project_id);
+            const Staff& staff = staff_dict_.at(alloc.staff_id);
+            const Project& project = project_dict_.at(alloc.project_id);
 
             // highest priority - project proposer
             if (project.proposer_id == staff.staff_id) {
@@ -182,109 +191,155 @@ int Allocator::calculate_score() const{
             }
         }
     }
-    DEBUG_PRINT("Final Score: " << score << "\n");
+    // DEBUG_PRINT("Final Score: " << score << "\n");
     return score;
 }
 
+void Allocator::reset_allocations() {
+    allocations_.clear();
+
+    for (auto& entry : project_dict_) {
+        Project& project = entry.second;
+        project.current_allocation = 0;
+    }
+
+    for (auto& entry : staff_dict_) {
+        Staff& staff = entry.second;
+        staff.current_workload = 0;
+    }
+}
 void Allocator::perform_allocation() {
-    // Phase 1 - allocate based on student preferences
+    max_score_ = -1;
+    best_allocations_.clear();
+
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine rng(seed);
+
+    std::vector<std::string> student_ids;
     for (auto& entry : student_dict_) {
-        std::string student_id = entry.first;
-        Student& student = entry.second;
+        student_ids.push_back(entry.first);
+    }
 
-        bool allocated = false;
-        for (const auto& project_id : student.project_preferences) {
-            if (project_dict_.count(project_id)) {
-                Project& project = project_dict_[project_id];
+    std::vector<std::string> staff_ids;
+    for (auto& entry : staff_dict_) {
+        staff_ids.push_back(entry.first);
+    }
 
-                if (project.is_available()) {
-                    project.current_allocation++;
+    for (int i = 0; i < 1000; ++i) {
+        reset_allocations();
 
-                    Allocation alloc;
-                    alloc.student_id = student_id;
-                    alloc.project_id = project_id;
-                    alloc.staff_id = "";
+        // shuffle student and staff order
+        std::shuffle(student_ids.begin(), student_ids.end(), rng);
+        std::shuffle(staff_ids.begin(), staff_ids.end(), rng);
 
-                    allocations[student_id] = alloc;
+        // Phase 1 - allocate based on student preferences
+        for (const auto& student_id : student_ids) {
+            Student& student = student_dict_.at(student_id);
 
-                    allocated = true;
-                    break;
+            for (const auto& project_id : student.project_preferences) {
+                if (project_dict_.count(project_id)) {
+                    Project& project = project_dict_.at(project_id);
+
+                    if (project.is_available()) {
+                        project.current_allocation++;
+
+                        Allocation alloc;
+                        alloc.student_id = student_id;
+                        alloc.project_id = project_id;
+                        alloc.staff_id = "";
+
+                        allocations_[student_id] = alloc;
+                        break;
+                    }
                 }
             }
         }
-    }
 
-    // Phase 2 - assign supervisors
-    // 2.1 - assign based on project proposer
-    for (auto& entry : staff_dict_) {
-        std::string staff_id = entry.first;
-        Staff& staff = entry.second;
+        // 1.5 assigns leftover students to any remaining projects, as per reqs.
+        for (const auto& student_id : student_ids) {
+            if (allocations_.find(student_id) == allocations_.end()) {
 
-        if(!staff.able_to_supervise()) continue;
+                for (auto& proj_entry : project_dict_) {
+                    Project& project = proj_entry.second;
 
-         for (auto& alloc_entry : allocations) {
-            Allocation& alloc = alloc_entry.second;
+                    if (project.is_available()) {
+                        project.current_allocation++;
 
-            if (alloc.staff_id.empty()) {
-                Project& project = project_dict_.at(alloc.project_id);
+                        Allocation alloc;
+                        alloc.student_id = student_id;
+                        alloc.project_id = project.project_id;
+                        alloc.staff_id = "";
 
-                if (project.proposer_id == staff_id) {
-                    alloc.staff_id = staff_id;
-                    staff.current_workload++;
+                        allocations_[student_id] = alloc;
+                        break;
+                    }
+                }
+            }
+        }
 
-                    if(!staff.able_to_supervise()) break;
+        // Phase 2 - assign supervisors
+        // 2.1 - assigned based on project proposer
+        for (const auto& staff_id : staff_ids) {
+            Staff& staff = staff_dict_.at(staff_id);
+            if (!staff.able_to_supervise()) continue;
+
+            for (auto& alloc_entry : allocations_) {
+                Allocation& alloc = alloc_entry.second;
+
+                if (alloc.staff_id.empty()) {
+                    Project& project = project_dict_.at(alloc.project_id);
+                    if (project.proposer_id == staff.staff_id) {
+                        alloc.staff_id = staff.staff_id;
+                        staff.current_workload++;
+                        if (!staff.able_to_supervise()) break;
                 }
             }
         }
     }
 
     // 2.2 - assign based on subject area match
-    for (auto& entry : staff_dict_) {
-        std::string staff_id = entry.first;
-        Staff& staff = entry.second;
-
+    for (const auto& staff_id : staff_ids) {
+        Staff& staff = staff_dict_.at(staff_id);
         if(!staff.able_to_supervise()) continue;
 
-        for (auto& alloc_entry : allocations) {
+        for (auto& alloc_entry : allocations_) {
             Allocation& alloc = alloc_entry.second;
-
             if (alloc.staff_id.empty()) {
                 Project& project = project_dict_.at(alloc.project_id);
-
-                bool subject_match = false;
                 for (const auto& area : staff.subject_areas) {
                     if (area == project.subject_area) {
-                        subject_match = true;
+                        alloc.staff_id = staff.staff_id;
+                        staff.current_workload++;
                         break;
                     }
                 }
-
-                if (subject_match) {
-                    alloc.staff_id = staff_id;
-                    staff.current_workload++;
-
-                    if(!staff.able_to_supervise()) break;
-                }
+                if (!staff.able_to_supervise()) break;
             }
         }
     }
-
     // 2.3 - assign to any available staff
-    for (auto& entry : staff_dict_) {
-        std::string staff_id = entry.first;
-        Staff& staff = entry.second;
-
+    for (const auto& staff_id : staff_ids) {
+        Staff& staff = staff_dict_.at(staff_id);
         if(!staff.able_to_supervise()) continue;
 
-        for (auto& alloc_entry : allocations) {
+        for (auto& alloc_entry : allocations_) {
             Allocation& alloc = alloc_entry.second;
-
             if (alloc.staff_id.empty()) {
-                alloc.staff_id = staff_id;
+                alloc.staff_id = staff.staff_id;
                 staff.current_workload++;
-
-                if(!staff.able_to_supervise()) break;
+                if (!staff.able_to_supervise()) break;
             }
         }
     }
+
+    // check if this is the best score so far
+    int current_score = calculate_score();
+    if (current_score > max_score_) {
+        max_score_ = current_score;
+        best_allocations_ = allocations_;
+    }
+}
+
+allocations_ = best_allocations_;
+
 }

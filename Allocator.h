@@ -34,16 +34,20 @@ class Allocator{
         void load_students(const std::string& student_file);
 
         void perform_allocation();
+        void improve_allocation(int iterations);
         void save_allocation(const std::string& allocation_file);
     private:
         int calculate_score() const;
+        void reset_allocations();
 
         std::unordered_map<std::string, Staff>staff_dict_;
         std::unordered_map<std::string, Project>project_dict_;
         std::unordered_map<std::string, Student>student_dict_;
 
         // Sorted by student_id for easy output
-        std::map<std::string, Allocation>allocations;
+        std::map<std::string, Allocation>allocations_;
+        std::map<std::string, Allocation> best_allocations_;
+        int max_score_ = -1;
 };
 
 #endif //ALLOCATOR_H

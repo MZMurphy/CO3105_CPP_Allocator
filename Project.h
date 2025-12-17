@@ -11,7 +11,7 @@ class Project{
         // Attributes.
         std::string project_id;
         std::string proposer_id;
-        int assignment_capacity; // Multiplixity.
+        int assignment_capacity;
         std::string subject_area;
         std::string title;
         int current_allocation;

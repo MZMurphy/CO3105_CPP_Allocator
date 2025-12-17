@@ -25,16 +25,15 @@ struct Allocation{
 
 class Allocator{
     public:
-        // Constructors
+
         Allocator();
 
-        // Parse files
+
         void load_staff(const std::string& staff_file);
         void load_projects(const std::string& project_file);
         void load_students(const std::string& student_file);
 
         void perform_allocation();
-        void improve_allocation(int iterations);
         void save_allocation(const std::string& allocation_file);
     private:
         int calculate_score() const;

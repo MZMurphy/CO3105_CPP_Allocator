@@ -17,7 +17,7 @@ class Staff{
         int current_workload;
 
         // Methods.
-        bool able_to_supervise() const; // Tells us if supervisor has room to take more studnets.
+        bool able_to_supervise() const; // Tells us if supervisor current_workload is less than max_supervision_workload
 };
 
 #endif //STAFF_H

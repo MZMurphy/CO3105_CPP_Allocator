@@ -1,5 +1,4 @@
 #include "Allocator.h"
-// See stream slides
 #include <fstream>
 #include <sstream>
 #include <vector>
@@ -10,22 +9,26 @@ Allocator::Allocator() {};
 
 // Example staff files look like:
 // staff_Id, workload, subject area, more subject arreas...
-// Open stafffile, read line by line. 
+// Parses staff file
 void Allocator::load_staff(const std::string& staff_file)
 {
-    std::ifstream file(staff_file); // open file.
-    std::string file_line; // holds each line
+    std::ifstream file(staff_file);
+    if (!file.is_open()) {
+        std::cerr << staff_file << " not found.\n";
+        exit(1);
+    }
+    std::string file_line;
 
     DEBUG_PRINT("stafffile: " <<staff_file <<"\n\n");
 
-    while(std::getline(file, file_line)) // read line by line
+    while(std::getline(file, file_line))
     {
         std::istringstream iss(file_line);
         std::string staff_id;
         int workload;
-        iss >> staff_id >> workload; // get staffid and workload from line
+        iss >> staff_id >> workload;
 
-        std::vector<std::string> subject_areas; // dynamic array of strings
+        std::vector<std::string> subject_areas;
         std::string subject_area;
         while(iss >> subject_area)
         {
@@ -41,7 +44,7 @@ void Allocator::load_staff(const std::string& staff_file)
         }
         DEBUG_PRINT("\n");
 
-        // Staff dictionaries
+
         Staff staff(staff_id, workload, subject_areas);
         staff_dict_.insert({staff_id, staff});
     }
@@ -55,8 +58,12 @@ void Allocator::load_staff(const std::string& staff_file)
 // Open 
 void Allocator::load_students(const std::string& student_file)
 {
-    std::ifstream file(student_file); // open file.
-    std::string file_line; // holds each line
+    std::ifstream file(student_file);
+    if(!file.is_open()) {
+        std::cerr << student_file << " not found.\n"
+        exit(1);
+    }
+    std::string file_line;
 
     DEBUG_PRINT("\n studentfile: " <<student_file <<"\n\n");
 
@@ -64,7 +71,7 @@ void Allocator::load_students(const std::string& student_file)
     {
         std::istringstream iss(file_line);
         std::string student_id;
-        iss >> student_id; // get student id
+        iss >> student_id;
 
         // Non-fixed attributes.
         std::vector<std::string> project_preferences;
@@ -73,11 +80,11 @@ void Allocator::load_students(const std::string& student_file)
         {
             project_preferences.push_back(project_id);
         }
-        // Student dictionary.
+
         Student student(student_id, project_preferences);
         student_dict_.insert({student_id, student});
 
-        // DEBUG.
+
         DEBUG_PRINT("Student ID: " << student_id << "\n");
         DEBUG_PRINT("Project Preferences: ");
         for(std::string project: project_preferences)
@@ -96,8 +103,12 @@ void Allocator::load_students(const std::string& student_file)
 
 void Allocator::load_projects(const std::string& project_file)
 {
-    std::ifstream file(project_file); // open file.
-    std::string file_line; // holds each line
+    std::ifstream file(project_file);
+    if(!file.is_open()) {
+        std::cerr << student_file << " not found.\n"
+        exit(1);
+    }
+    std::string file_line;
     DEBUG_PRINT("projectfile: " << project_file << "\n\n");
 
     while(std::getline(file, file_line))
@@ -114,7 +125,7 @@ void Allocator::load_projects(const std::string& project_file)
             title = title.substr(1); // this removes leading space
         }
 
-        // Project dictionary
+
         Project project(project_id, staff_owner_id,
         assignment_capacity, subject_area, title);
         project_dict_.insert({project_id, project});
@@ -133,7 +144,7 @@ void Allocator::load_projects(const std::string& project_file)
 
 
 void Allocator::save_allocation(const std::string& allocation_file) {
-    std::ofstream file(allocation_file); // open file for writing
+    std::ofstream file(allocation_file);
 
     for (auto const& entry : allocations_) {
         Allocation alloc = entry.second;
@@ -143,7 +154,9 @@ void Allocator::save_allocation(const std::string& allocation_file) {
     file << calculate_score() << "\n";
     file.close();
 }
-
+// According to reqs: students first choice (4 points), second (3),
+// third (2), fourth (1). staff's proposal (4), subject area match (2)
+// 0 for illegal alloc.
 int Allocator::calculate_score() const{
     int score = 0;
 
@@ -208,6 +221,9 @@ void Allocator::reset_allocations() {
         staff.current_workload = 0;
     }
 }
+// example greedy algo with suggested improvement of repeating w/
+// a different random order of students & staff, and then choosing
+// the best one
 void Allocator::perform_allocation() {
     max_score_ = -1;
     best_allocations_.clear();

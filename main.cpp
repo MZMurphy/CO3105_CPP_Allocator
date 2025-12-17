@@ -8,7 +8,7 @@
 #include "Allocator.h"
 
 
-// Reads arguments and acts as the entry point for the program.
+
 int main(int argc, char* argv[])
 {
     if (argc != 5)
@@ -21,8 +21,7 @@ int main(int argc, char* argv[])
     std::string studentFile = argv[3];
     std::string outputFile = argv[4];
     
-    // Flow is that main never never directly accesses our Staff, Student, Project
-    // Data strcutures. Allocator is our inbetween of main and the data. 
+    // initialisation of allocator for handling data parsing and our algorithm
 
     Allocator allocator;
     allocator.load_staff(staffFile);
@@ -32,5 +31,5 @@ int main(int argc, char* argv[])
     allocator.perform_allocation();
     allocator.save_allocation(outputFile);
 
-    return 0; // Success.
+    return 0;
 }

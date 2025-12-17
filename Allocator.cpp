@@ -19,14 +19,20 @@ void Allocator::load_staff(const std::string& staff_file)
     }
     std::string file_line;
 
-    DEBUG_PRINT("stafffile: " <<staff_file <<"\n\n");
+    DEBUG_PRINT("staffile: " <<staff_file <<"\n\n");
 
     while(std::getline(file, file_line))
     {
+        if (file_line.empty()) continue;
         std::istringstream iss(file_line);
         std::string staff_id;
+
+        iss >> staff_id;
+        // comments were getting interpreted as student id
+        if (staff_id.empty() || staff_id[0] == '#') continue;
+
         int workload;
-        iss >> staff_id >> workload;
+        iss >> workload;
 
         std::vector<std::string> subject_areas;
         std::string subject_area;
@@ -60,7 +66,7 @@ void Allocator::load_students(const std::string& student_file)
 {
     std::ifstream file(student_file);
     if(!file.is_open()) {
-        std::cerr << student_file << " not found.\n"
+        std::cerr << student_file << " not found.\n";
         exit(1);
     }
     std::string file_line;
@@ -69,10 +75,13 @@ void Allocator::load_students(const std::string& student_file)
 
     while(std::getline(file, file_line))
     {
+        if (file_line.empty()) continue;
         std::istringstream iss(file_line);
         std::string student_id;
         iss >> student_id;
 
+        // checks for comments as those were confused with ids
+        if (student_id.empty() || student_id[0] == '#') continue;
         // Non-fixed attributes.
         std::vector<std::string> project_preferences;
         std::string project_id;
@@ -105,7 +114,7 @@ void Allocator::load_projects(const std::string& project_file)
 {
     std::ifstream file(project_file);
     if(!file.is_open()) {
-        std::cerr << student_file << " not found.\n"
+        std::cerr << project_file << " not found.\n";
         exit(1);
     }
     std::string file_line;
@@ -113,10 +122,17 @@ void Allocator::load_projects(const std::string& project_file)
 
     while(std::getline(file, file_line))
     {
+        if (file_line.empty()) continue;
         std::istringstream iss(file_line);
-        std::string project_id, staff_owner_id, subject_area;
+        std::string project_id;
+
+        iss >> project_id;
+        // checks for comments as those were confused with ids
+        if (project_id.empty() || project_id[0] == '#') continue;
+
+        std::string staff_owner_id, subject_area;
         int assignment_capacity;
-        iss >> project_id >> staff_owner_id >> assignment_capacity >> subject_area; 
+        iss >> staff_owner_id >> assignment_capacity >> subject_area;
 
         // Get non-fixed Title with spaces.
         std::string title;
@@ -167,7 +183,7 @@ int Allocator::calculate_score() const{
         // they still get their project choice, so get a higher score anyway.
         // this doesn't fulfill allocation reqs.
         if (alloc.staff_id.empty()) {
-            continue;
+            return -1;
         }
         // student preference score
         const Student& student = student_dict_.at(alloc.student_id);
@@ -271,7 +287,36 @@ void Allocator::perform_allocation() {
             }
         }
 
-        // 1.5 assigns leftover students to any remaining projects, as per reqs.
+        // 1.5a assigns leftover students to staff proposals first, so staff scores are
+        // at least maximised
+        for (const auto& staff_id : staff_ids) {
+            Staff& staff = staff_dict_.at(staff_id);
+            if (!staff.able_to_supervise()) continue;
+
+            for (auto& proj_entry : project_dict_) {
+                Project& project = proj_entry.second;
+
+                if (project.proposer_id == staff_id && project.is_available()) {
+
+                    for (const auto& student_id : student_ids) {
+                        if (allocations_.find(student_id) == allocations_.end()) {
+                            project.current_allocation++;
+                            staff.current_workload++;
+
+                            Allocation alloc;
+                            alloc.student_id = student_id;
+                            alloc.project_id = project.project_id;
+                            alloc.staff_id = staff_id;
+
+                            allocations_[student_id] = alloc;
+                            break;
+                        }
+                    }
+                }
+                if (!staff.able_to_supervise()) break;
+            }
+        }
+        // 1.5b assigns leftover students to any remaining projects, as per reqs.
         for (const auto& student_id : student_ids) {
             if (allocations_.find(student_id) == allocations_.end()) {
 
@@ -350,7 +395,7 @@ void Allocator::perform_allocation() {
 
     // check if this is the best score so far
     int current_score = calculate_score();
-    if (current_score > max_score_) {
+    if (current_score != -1 && current_score > max_score_) {
         max_score_ = current_score;
         best_allocations_ = allocations_;
     }

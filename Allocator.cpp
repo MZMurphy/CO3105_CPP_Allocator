@@ -5,11 +5,10 @@
 #include <algorithm>
 #include <random>
 #include <chrono>
+
 Allocator::Allocator() {};
 
-// Example staff files look like:
-// staff_Id, workload, subject area, more subject arreas...
-// Parses staff file
+// Parses staff file.
 void Allocator::load_staff(const std::string& staff_file)
 {
     std::ifstream file(staff_file);
@@ -59,9 +58,7 @@ void Allocator::load_staff(const std::string& staff_file)
     file.close();
 }
 
-// Example student file looks like
-// student_id, project_id, 0-4 project ids...
-// Open 
+// Parses student file.
 void Allocator::load_students(const std::string& student_file)
 {
     std::ifstream file(student_file);
@@ -107,9 +104,7 @@ void Allocator::load_students(const std::string& student_file)
 
 }
 
-// Example project file looks like:
-// project_id, proposer/staff_id, max_students/multpliciyt, subject aras, and titles WITH spaces.
-
+// Parses project file.
 void Allocator::load_projects(const std::string& project_file)
 {
     std::ifstream file(project_file);
@@ -237,6 +232,7 @@ void Allocator::reset_allocations() {
         staff.current_workload = 0;
     }
 }
+
 // example greedy algo with suggested improvement of repeating w/
 // a different random order of students & staff, and then choosing
 // the best one
@@ -353,54 +349,55 @@ void Allocator::perform_allocation() {
                         alloc.staff_id = staff.staff_id;
                         staff.current_workload++;
                         if (!staff.able_to_supervise()) break;
-                }
-            }
-        }
-    }
-
-    // 2.2 - assign based on subject area match
-    for (const auto& staff_id : staff_ids) {
-        Staff& staff = staff_dict_.at(staff_id);
-        if(!staff.able_to_supervise()) continue;
-
-        for (auto& alloc_entry : allocations_) {
-            Allocation& alloc = alloc_entry.second;
-            if (alloc.staff_id.empty()) {
-                Project& project = project_dict_.at(alloc.project_id);
-                for (const auto& area : staff.subject_areas) {
-                    if (area == project.subject_area) {
-                        alloc.staff_id = staff.staff_id;
-                        staff.current_workload++;
-                        break;
                     }
                 }
-                if (!staff.able_to_supervise()) break;
             }
         }
-    }
-    // 2.3 - assign to any available staff
-    for (const auto& staff_id : staff_ids) {
-        Staff& staff = staff_dict_.at(staff_id);
-        if(!staff.able_to_supervise()) continue;
 
-        for (auto& alloc_entry : allocations_) {
-            Allocation& alloc = alloc_entry.second;
-            if (alloc.staff_id.empty()) {
-                alloc.staff_id = staff.staff_id;
-                staff.current_workload++;
-                if (!staff.able_to_supervise()) break;
+        // 2.2 - assign based on subject area match
+        for (const auto& staff_id : staff_ids) {
+            Staff& staff = staff_dict_.at(staff_id);
+            if(!staff.able_to_supervise()) continue;
+
+            for (auto& alloc_entry : allocations_) {
+                Allocation& alloc = alloc_entry.second;
+                if (alloc.staff_id.empty()) {
+                    Project& project = project_dict_.at(alloc.project_id);
+                    for (const auto& area : staff.subject_areas) {
+                        if (area == project.subject_area) {
+                            alloc.staff_id = staff.staff_id;
+                            staff.current_workload++;
+                            break;
+                        }
+                    }
+                    if (!staff.able_to_supervise()) break;
+                }
             }
+        }
+
+        // 2.3 - assign to any available staff
+        for (const auto& staff_id : staff_ids) {
+            Staff& staff = staff_dict_.at(staff_id);
+            if(!staff.able_to_supervise()) continue;
+
+            for (auto& alloc_entry : allocations_) {
+                Allocation& alloc = alloc_entry.second;
+                if (alloc.staff_id.empty()) {
+                    alloc.staff_id = staff.staff_id;
+                    staff.current_workload++;
+                    if (!staff.able_to_supervise()) break;
+                }
+            }
+        }
+
+        // check if this is the best score so far
+        int current_score = calculate_score();
+        if (current_score != -1 && current_score > max_score_) {
+            max_score_ = current_score;
+            best_allocations_ = allocations_;
         }
     }
 
-    // check if this is the best score so far
-    int current_score = calculate_score();
-    if (current_score != -1 && current_score > max_score_) {
-        max_score_ = current_score;
-        best_allocations_ = allocations_;
-    }
-}
-
-allocations_ = best_allocations_;
+    allocations_ = best_allocations_;
 
 }

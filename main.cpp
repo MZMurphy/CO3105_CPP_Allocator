@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
     std::string studentFile = argv[3];
     std::string outputFile = argv[4];
     
-    // initialisation of allocator for handling data parsing and our algorithm
+    // Initialisation of allocator for handling data parsing and our algorithm.
 
     Allocator allocator;
     allocator.load_staff(staffFile);

@@ -20,14 +20,10 @@ struct Allocation{
     std::string staff_id;
 };
 
-
-// class Allocator {} should be where our BIG functions go e.g. assignment algo.
-
 class Allocator{
     public:
 
         Allocator();
-
 
         void load_staff(const std::string& staff_file);
         void load_projects(const std::string& project_file);
@@ -35,6 +31,7 @@ class Allocator{
 
         void perform_allocation();
         void save_allocation(const std::string& allocation_file);
+        
     private:
         int calculate_score() const;
         void reset_allocations();

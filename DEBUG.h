@@ -2,7 +2,7 @@
 #define DEBUG_H
 
 #include <iostream>
-#define DEBUG 1
+#define DEBUG 0
 
 #if DEBUG
     #define DEBUG_PRINT(x) std::cout << x
